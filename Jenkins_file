@@ -1,18 +1,19 @@
 pipeline {
     agent any
-        SONARQUBE_SCANNER_HOME = tool name: 'SonarQubeScanner
-' // Matches the configured scanner tool in Jenkins
-        SONAR_PROJECT_KEY = 'React.js'                // Unique identifier for the project
+    environment {
+        // Define your environment variables here
+        SONARQUBE_SCANNER_HOME = tool name: 'SonarQubeScanner' // Matches the configured SonarQube scanner tool in Jenkins
+        SONAR_PROJECT_KEY = 'React.js'                     // Unique identifier for the project
         GITHUB_REPO = 'https://github.com/simonebinezer/React.js'
-        SONAR_HOST_URL = 'http://localhost:9099'          // SonarQube server address
-        SONAR_TOKEN = credentials('CSAT_Code')         // Jenkins credentials storing the SonarQube token
+        SONAR_HOST_URL = 'http://localhost:9099'            // SonarQube server address
+        SONAR_TOKEN = credentials('CSAT_Code')             // Jenkins credentials storing the SonarQube token
+    }
 
     stages {
         stage('Checkout SCM') {
             steps {
-                // Removed credentialsId since it's not required for a public repository
-                git branch: 'main',
-                    url: 'https://github.com/simonebinezer/React.js.git'
+                // Checkout the repository from GitHub
+                git branch: 'main', url: "${GITHUB_REPO}"
             }
         }
         stage('Prepare Local Directory') {
@@ -21,37 +22,50 @@ pipeline {
                     echo 'Copying code to local directory...'
                 }
                 bat '''
-                mkdir "C:\\React Code"
-                xcopy /E /I /Y . "C:\\React Code"
+                mkdir "C:\\React_Code"
+                xcopy /E /I /Y . "C:\\React_Code"
                 '''
             }
         }
         stage('Install Dependencies') {
             steps {
-                // Use 'bat' for Windows or 'sh' for Linux/MacOS
-                bat 'npm install' // Change to 'sh' if running on Linux/MacOS
+                // Install dependencies using npm (ensure Node.js and npm are installed)
+                bat 'npm install'  // Change to 'sh npm install' for Linux/macOS
             }
         }
-        stage('SonarQube Analysis') {
-            environment {
-                SONAR_SCANNER_HOME = tool 'SonarQubeScanner'
-            }
+        stage('Build & SonarQube Analysis') {
             steps {
-                // Adjust the SonarQube scanner command based on your environment
-                bat "${env.SONAR_SCANNER_HOME}\\bin\\sonar-scanner.bat -Dsonar.projectKey=ReactProject -Dsonar.sources=./src"
+                withSonarQubeEnv('SonarQube') {  // Use the correct SonarQube instance name configured in Jenkins
+                    echo "Starting SonarQube analysis..."
+                    bat """
+                        ${SONARQUBE_SCANNER_HOME}\\bin\\sonar-scanner.bat \
+                        -Dsonar.projectKey=${SONAR_PROJECT_KEY} \
+                        -Dsonar.projectName="React.js" \
+                        -Dsonar.projectVersion="1.0" \
+                        -Dsonar.sources=. \
+                        -Dsonar.host.url=${SONAR_HOST_URL} \
+                        -Dsonar.login=${SONAR_TOKEN}
+                    """
+                }
             }
         }
         stage('Quality Gate') {
             steps {
-                script {
-                    // Wait for SonarQube Quality Gate result
-                    timeout(time: 10, unit: 'MINUTES') {
-                        waitForQualityGate abortPipeline: true
+                timeout(time: 60, unit: 'MINUTES') {
+                    script {
+                        echo "Checking SonarQube Quality Gate status..."
+                        def qg = waitForQualityGate() // Wait for the SonarQube quality gate result
+                        if (qg.status != 'OK') {
+                            error "Pipeline failed due to quality gate failure: ${qg.status}"
+                        } else {
+                            echo "Quality Gate passed!"
+                        }
                     }
                 }
             }
         }
     }
+    
     post {
         always {
             echo 'Pipeline execution completed!'
