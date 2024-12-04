@@ -1,5 +1,12 @@
 pipeline {
     agent any
+        SONARQUBE_SCANNER_HOME = tool name: 'SonarQubeScanner
+' // Matches the configured scanner tool in Jenkins
+        SONAR_PROJECT_KEY = 'React.js'                // Unique identifier for the project
+        GITHUB_REPO = 'https://github.com/simonebinezer/CSAT'
+        SONAR_HOST_URL = 'http://localhost:9099'          // SonarQube server address
+        SONAR_TOKEN = credentials('CSAT_Code')         // Jenkins credentials storing the SonarQube token
+
     stages {
         stage('Checkout SCM') {
             steps {
