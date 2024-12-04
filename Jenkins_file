@@ -12,7 +12,7 @@ pipeline {
                 script {
                     echo "Cloning the repository..."
                 }
-                git branch: 'main', url: 'https://github.com/simonebinezer/<repository-name>.git' // Replace <repository-name> with your repo
+                git branch: 'main', url: 'https://github.com/simonebinezer/React.js.git' // Replace <repository-name> with your repo
             }
         }
         
