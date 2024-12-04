@@ -3,24 +3,26 @@ pipeline {
     stages {
         stage('Checkout SCM') {
             steps {
+                // Removed credentialsId since it's not required for a public repository
                 git branch: 'main',
-                    url: 'https://github.com/simonebinezer/React.js.git',
+                    url: 'https://github.com/simonebinezer/React.js.git'
             }
         }
         stage('Prepare Local Directory') {
-    steps {
-        script {
-            echo 'Copying code to local directory...'
+            steps {
+                script {
+                    echo 'Copying code to local directory...'
+                }
+                bat '''
+                mkdir "C:\\React Code"
+                xcopy /E /I /Y . "C:\\React Code"
+                '''
+            }
         }
-        bat '''
-        mkdir "C:\React Code"
-        xcopy /E /I /Y . "C:\React Code"
-        '''
-    }
-}
         stage('Install Dependencies') {
             steps {
-                bat 'npm install' // Use bat for Windows
+                // Use 'bat' for Windows or 'sh' for Linux/MacOS
+                bat 'npm install' // Change to 'sh' if running on Linux/MacOS
             }
         }
         stage('SonarQube Analysis') {
@@ -28,13 +30,15 @@ pipeline {
                 SONAR_SCANNER_HOME = tool 'SonarQubeScanner'
             }
             steps {
+                // Adjust the SonarQube scanner command based on your environment
                 bat "${env.SONAR_SCANNER_HOME}\\bin\\sonar-scanner.bat -Dsonar.projectKey=ReactProject -Dsonar.sources=./src"
             }
         }
         stage('Quality Gate') {
             steps {
                 script {
-                    timeout(time: 1, unit: 'MINUTES') {
+                    // Wait for SonarQube Quality Gate result
+                    timeout(time: 10, unit: 'MINUTES') {
                         waitForQualityGate abortPipeline: true
                     }
                 }
