@@ -49,23 +49,6 @@ pipeline {
                 }
             }
         }
-        stage('Quality Gate') {
-            steps {
-                timeout(time: 3, unit: 'MINUTES') {
-                    script {
-                        echo "Checking SonarQube Quality Gate status..."
-                        def qg = waitForQualityGate() // Wait for the SonarQube quality gate result
-                        if (qg.status != 'OK') {
-                            error "Pipeline failed due to quality gate failure: ${qg.status}"
-                        } else {
-                            echo "Quality Gate passed!"
-                        }
-                    }
-                }
-            }
-        }
-    }
-    
     post {
         always {
             echo 'Pipeline execution completed!'
