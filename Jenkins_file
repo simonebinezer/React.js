@@ -1,0 +1,70 @@
+pipeline {
+    agent any
+    
+    environment {
+        SONARQUBE_SERVER = 'SonarQube' // Replace with your SonarQube server name configured in Jenkins
+        PROJECT_DIR = "C:\React Code"         // Local folder where the project will be stored
+    }
+    
+    stages {
+        stage('Clone Repository') {
+            steps {
+                script {
+                    echo "Cloning the repository..."
+                }
+                git branch: 'main', url: 'https://github.com/simonebinezer/<repository-name>.git' // Replace <repository-name> with your repo
+            }
+        }
+        
+        stage('Prepare Local Directory') {
+            steps {
+                script {
+                    echo "Copying code to local directory..."
+                    sh """
+                    mkdir -p ${PROJECT_DIR}
+                    cp -R * ${PROJECT_DIR}
+                    """
+                }
+            }
+        }
+        
+        stage('Install Dependencies') {
+            steps {
+                dir("${PROJECT_DIR}") {
+                    script {
+                        echo "Installing dependencies..."
+                        sh 'npm install'
+                    }
+                }
+            }
+        }
+        
+        stage('SonarQube Analysis') {
+            steps {
+                dir("${PROJECT_DIR}") {
+                    script {
+                        echo "Running SonarQube analysis..."
+                        withSonarQubeEnv(SONARQUBE_SERVER) {
+                            sh 'sonar-scanner -Dsonar.projectKey=my-react-app -Dsonar.sources=. -Dsonar.host.url=${SONAR_HOST_URL} -Dsonar.login=${SONAR_AUTH_TOKEN}'
+                        }
+                    }
+                }
+            }
+        }
+        
+        stage('Quality Gate') {
+            steps {
+                script {
+                    echo "Waiting for quality gate..."
+                    waitForQualityGate abortPipeline: true
+                }
+            }
+        }
+    }
+    
+    post {
+        always {
+            echo "Pipeline execution completed!"
+        }
+    }
+}
