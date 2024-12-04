@@ -3,7 +3,7 @@ pipeline {
     
     environment {
         SONARQUBE_SERVER = 'SonarQube' // Replace with your SonarQube server name configured in Jenkins
-        PROJECT_DIR = "C:\React Code"         // Local folder where the project will be stored
+        PROJECT_DIR = "C:\\React Code"         // Local folder where the project will be stored
     }
     
     stages {
