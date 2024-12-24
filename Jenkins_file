@@ -2,7 +2,7 @@ pipeline {
     agent any
     environment {
         // Define your environment variables here
-        SONARQUBE_SCANNER_HOME = tool name: 'SonarQubeScanner' // Matches the configured SonarQube scanner tool in Jenkins
+        SONARQUBE_SCANNER_HOME = tool name: 'SonarQube_Scanner' // Matches the configured SonarQube scanner tool in Jenkins
         SONAR_PROJECT_KEY = 'React.js'                     // Unique identifier for the project
         GITHUB_REPO = 'https://github.com/simonebinezer/React.js'
         SONAR_HOST_URL = 'http://18.237.49.246:9000'            // SonarQube server address
