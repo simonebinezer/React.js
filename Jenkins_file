@@ -1,56 +1,39 @@
 pipeline {
     agent any
     environment {
-        // Define your environment variables here
-        SONARQUBE_SCANNER_HOME = tool(name: 'SonarQubeScanner') // Matches the configured SonarQube scanner tool in Jenkins
-        SONAR_PROJECT_KEY = 'React.js'                        // Unique identifier for the project
+        SONARQUBE_SCANNER_HOME = tool name: 'SonarQube_Scanner'
+        SONAR_PROJECT_KEY = 'React.js'
         GITHUB_REPO = 'https://github.com/simonebinezer/React.js'
-        SONAR_HOST_URL = 'http://18.237.49.246:9000'           // SonarQube server address
-        SONAR_TOKEN = credentials('Sonar')                    // Jenkins credentials storing the SonarQube token
+        SONAR_HOST_URL = 'http://18.237.49.246:9000'
+        SONAR_TOKEN = credentials('Sonar') // Securely stored token in Jenkins
     }
 
     stages {
         stage('Checkout SCM') {
             steps {
-                // Checkout the repository from GitHub
                 git branch: 'main', url: "${GITHUB_REPO}"
-            }
-        }
-        stage('Prepare Local Directory') {
-            steps {
-                script {
-                    echo 'Copying code to local directory...'
-                }
-                bat '''
-                mkdir "C:\\React_Code"
-                xcopy /E /I /Y . "C:\\React_Code"
-                '''
             }
         }
         stage('Install Dependencies') {
             steps {
-                // Install dependencies using npm (ensure Node.js and npm are installed)
-                bat 'npm install'  // Change to 'sh npm install' for Linux/macOS
+                bat 'npm install'
             }
         }
         stage('Build & SonarQube Analysis') {
             steps {
-                withSonarQubeEnv('SonarQube') {  // Use the correct SonarQube instance name configured in Jenkins
+                withSonarQubeEnv('SonarQube') {
                     echo "Starting SonarQube analysis..."
                     bat """
-                        ${SONARQUBE_SCANNER_HOME}\\bin\\sonar-scanner.bat ^
-                        -Dsonar.projectKey=${SONAR_PROJECT_KEY} ^
-                        -Dsonar.projectName="React.js" ^
-                        -Dsonar.projectVersion="1.0" ^
-                        -Dsonar.sources=. ^
-                        -Dsonar.host.url=${SONAR_HOST_URL} ^
-                        -Dsonar.login=${SONAR_TOKEN}
+                        ${SONARQUBE_SCANNER_HOME}\\bin\\sonar-scanner.bat \
+                        -Dsonar.projectKey=${SONAR_PROJECT_KEY} \
+                        -Dsonar.host.url=${SONAR_HOST_URL} \
+                        -Dsonar.login=${SONAR_TOKEN} \
+                        -X
                     """
                 }
             }
         }
     }
-
     post {
         always {
             echo 'Pipeline execution completed!'
