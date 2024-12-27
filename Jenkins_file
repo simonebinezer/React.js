@@ -2,12 +2,11 @@ pipeline {
     agent any
     environment {
         // Define your environment variables here
-        SONARQUBE_SCANNER_HOME = tool name: 'SonarQube_Scanner' // Matches the configured SonarQube scanner tool in Jenkins 
-        SONAR_PROJECT_KEY = 'React.js'                     // Unique identifier for the project
+        SONARQUBE_SCANNER_HOME = tool(name: 'SonarQubeScanner') // Matches the configured SonarQube scanner tool in Jenkins
+        SONAR_PROJECT_KEY = 'React.js'                        // Unique identifier for the project
         GITHUB_REPO = 'https://github.com/simonebinezer/React.js'
-        SONAR_HOST_URL = 'http://18.237.49.246:9000'            // SonarQube server address
-       // SONAR_TOKEN = credentials('Sonar')             // Jenkins credentials storing the SonarQube token
-        SONAR_TOKEN ='sqa_b70ad9ef7a1cfe3fa049bc1daa213b9249cdb4b2'
+        SONAR_HOST_URL = 'http://18.237.49.246:9000'           // SonarQube server address
+        SONAR_TOKEN = credentials('Sonar')                    // Jenkins credentials storing the SonarQube token
     }
 
     stages {
@@ -39,21 +38,25 @@ pipeline {
                 withSonarQubeEnv('SonarQube') {  // Use the correct SonarQube instance name configured in Jenkins
                     echo "Starting SonarQube analysis..."
                     bat """
-                        ${SONARQUBE_SCANNER_HOME}\\bin\\sonar-scanner.bat \
-                        -Dsonar.projectKey=${SONAR_PROJECT_KEY} \
-                        -Dsonar.projectName="React.js" \
-                        -Dsonar.projectVersion="1.0" \
-                        -Dsonar.sources=. \
-                        -Dsonar.host.url=${SONAR_HOST_URL} \
+                        ${SONARQUBE_SCANNER_HOME}\\bin\\sonar-scanner.bat ^
+                        -Dsonar.projectKey=${SONAR_PROJECT_KEY} ^
+                        -Dsonar.projectName="React.js" ^
+                        -Dsonar.projectVersion="1.0" ^
+                        -Dsonar.sources=. ^
+                        -Dsonar.host.url=${SONAR_HOST_URL} ^
                         -Dsonar.login=${SONAR_TOKEN}
                     """
                 }
             }
         }
-}
+    }
+
     post {
         always {
             echo 'Pipeline execution completed!'
+        }
+        failure {
+            echo 'Pipeline failed. Check the logs for details.'
         }
     }
 }
