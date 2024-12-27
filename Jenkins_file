@@ -1,15 +1,14 @@
 pipeline {
     agent any
     environment {
-        SONARQUBE_SCANNER_HOME = tool name: 'SonarQube_Scanner'
         SONAR_PROJECT_KEY = 'React.js'
         GITHUB_REPO = 'https://github.com/simonebinezer/React.js'
         SONAR_HOST_URL = 'http://18.237.49.246:9000'
-        SONAR_TOKEN = credentials('Sonar') // Securely stored token in Jenkins
+        SONAR_TOKEN = credentials('Sonar') // Replace with the ID of your SonarQube token
     }
 
     stages {
-        stage('Checkout SCM') {
+        stage('Checkout Code') {
             steps {
                 git branch: 'main', url: "${GITHUB_REPO}"
             }
@@ -19,17 +18,20 @@ pipeline {
                 bat 'npm install'
             }
         }
-        stage('Build & SonarQube Analysis') {
+        stage('Run SonarQube Analysis') {
             steps {
                 withSonarQubeEnv('SonarQube') {
-                    echo "Starting SonarQube analysis..."
-                    bat """
-                        ${SONARQUBE_SCANNER_HOME}\\bin\\sonar-scanner.bat \
-                        -Dsonar.projectKey=${SONAR_PROJECT_KEY} \
-                        -Dsonar.host.url=${SONAR_HOST_URL} \
-                        -Dsonar.login=${SONAR_TOKEN} \
-                        -X
-                    """
+                    script {
+                        // Using Jenkins-managed SonarScanner
+                        def scannerHome = tool name: 'SonarQube_Scanner'
+                        bat """
+                            ${scannerHome}\\bin\\sonar-scanner.bat \
+                            -Dsonar.projectKey=${SONAR_PROJECT_KEY} \
+                            -Dsonar.host.url=${SONAR_HOST_URL} \
+                            -Dsonar.login=${SONAR_TOKEN} \
+                            -X
+                        """
+                    }
                 }
             }
         }
