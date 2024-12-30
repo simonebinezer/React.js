@@ -4,20 +4,13 @@ pipeline {
         SONAR_PROJECT_KEY = 'React.js'
         GITHUB_REPO = 'https://github.com/simonebinezer/React.js'
         SONAR_HOST_URL = 'http://18.237.49.246:9000'
-        SONAR_TOKEN = credentials('Sonar_Token') // Replace with the ID of your SonarQube token
+        SONAR_TOKEN = credentials('Sonar_Token') // Ensure the credential ID is correct
     }
 
     stages {
         stage('Checkout Code') {
             steps {
-                // Install Git if not already installed
-                script {
-                    def gitInstalled = sh(script: 'git --version', returnStatus: true)
-                    if (gitInstalled != 0) {
-                        sh 'sudo yum install -y git'
-                    }
-                }
-                sh "git branch main && git clone ${GITHUB_REPO}"
+                git branch: 'main', url: "${GITHUB_REPO}"
             }
         }
         stage('Install Dependencies') {
@@ -27,10 +20,10 @@ pipeline {
         }
         stage('Run SonarQube Analysis') {
             steps {
-                withSonarQubeEnv('SonarQube') {
+                withSonarQubeEnv('SonarQube') { // Ensure 'SonarQube' matches the name of your SonarQube server in Jenkins
                     script {
                         // Using Jenkins-managed SonarScanner
-                        def scannerHome = tool name: 'SonarQube_Scanner'
+                        def scannerHome = tool name: 'SonarQube_Scanner' // Ensure this matches the configured scanner name
                         sh """
                             ${scannerHome}/bin/sonar-scanner \
                             -Dsonar.projectKey=${SONAR_PROJECT_KEY} \
