@@ -19,8 +19,8 @@ pipeline {
                     script {
                         // Using Jenkins-managed SonarScanner
                         def scannerHome = tool name: 'SonarQube_Scanner'
-                        bat """
-                            ${scannerHome}\\bin\\sonar-scanner.bat \
+                        sh """
+                            ${scannerHome}/bin/sonar-scanner \
                             -Dsonar.projectKey=${SONAR_PROJECT_KEY} \
                             -Dsonar.host.url=${SONAR_HOST_URL} \
                             -Dsonar.login=${SONAR_TOKEN} \
