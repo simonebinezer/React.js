@@ -2,9 +2,9 @@ pipeline {
     agent any
     environment {
         SONAR_PROJECT_KEY = 'React.js'
-        GITHUB_REPO = 'https://github.com/simonebinezer/React.js.git'
+        GITHUB_REPO = 'https://github.com/simonebinezer/React.js'
         SONAR_HOST_URL = 'http://18.237.49.246:9000'
-       // SONAR_TOKEN = credentials('Sonar_Token') // Replace with the ID of your SonarQube token
+        SONAR_TOKEN = credentials('Sonar_Token') // Replace with the ID of your SonarQube token
     }
 
     stages {
@@ -23,7 +23,7 @@ pipeline {
                             ${scannerHome}/bin/sonar-scanner \
                             -Dsonar.projectKey=${SONAR_PROJECT_KEY} \
                             -Dsonar.host.url=${SONAR_HOST_URL} \
-                            -Dsonar.login=${env.Sonar_Token} \
+                            -Dsonar.login=${SONAR_TOKEN} \
                             -X
                         """
                     }
