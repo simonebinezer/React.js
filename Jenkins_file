@@ -1,24 +1,26 @@
 pipeline {
     agent any
     environment {
-        SONAR_PROJECT_KEY = 'React.js'  // SonarQube project key
-        GITHUB_REPO = 'https://github.com/simonebinezer/React.js'  // GitHub repository URL
-        SONAR_HOST_URL = 'http://18.237.49.246:9000'  // SonarQube server URL
-        SONAR_TOKEN = credentials('Sonar_Token')  // SonarQube token from Jenkins credentials
+        SONAR_PROJECT_KEY = 'React.js'
+        GITHUB_REPO = 'https://github.com/simonebinezer/React.js'
+        SONAR_HOST_URL = 'http://18.237.49.246:9000'
+        SONAR_TOKEN = credentials('Sonar_Token')
+    }
+
+    tools {
+        sonarScanner 'SonarQube_Scanner'  // Make sure this matches the name in your Jenkins tool config
     }
 
     stages {
         stage('Checkout Code') {
             steps {
-                // Checkout code from GitHub repository
                 git branch: 'main', url: "${GITHUB_REPO}"
             }
         }
-
         stage('Run SonarQube Analysis') {
             steps {
                 script {
-                    // Run SonarQube analysis with the provided SonarQube details
+                    // Running SonarQube analysis using the scanner tool defined above
                     sh """
                         sonar-scanner \
                         -Dsonar.projectKey=${SONAR_PROJECT_KEY} \
@@ -34,12 +36,9 @@ pipeline {
 
     post {
         always {
-            // This will always run after the pipeline
             echo 'Pipeline execution completed!'
         }
-
         failure {
-            // If the pipeline fails, it will print this message
             echo 'Pipeline failed. Check the logs for details.'
         }
     }
