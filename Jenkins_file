@@ -4,35 +4,29 @@ pipeline {
         SONAR_PROJECT_KEY = 'React.js'
         GITHUB_REPO = 'https://github.com/simonebinezer/React.js'
         SONAR_HOST_URL = 'http://18.237.49.246:9000'
-        SONAR_TOKEN = credentials('Sonar_Token') // Replace with the ID of your SonarQube token
-        TARGET_SERVER = "ec2-user@ec2-34-220-228-240.us-west-2.compute.amazonaws.com" // Replace with your target server
-        SSH_KEY = credentials('jenkins')  // Jenkins credential ID for SSH key
-        DEPLOY_DIR = "/var/www/html/sample-app" // Directory where the app will be deployed
+        SONAR_TOKEN = credentials('Sonar_Token') // Replace with your SonarQube token ID
     }
 
     stages {
- stage('Cleanup') {
-            steps {
-                cleanWs()  // Clean up the workspace
-            }
-        }
         stage('Checkout Code') {
             steps {
                 git branch: 'main', url: "${GITHUB_REPO}"
             }
         }
-    
-        stage('Deploy README.md') {
+        
+        stage('Run SonarQube Analysis') {
             steps {
-                sshagent(credentials: ["${SSH_KEY}"]) {
+                withSonarQubeEnv('SonarQube') {
                     script {
-                        // Copy README.md file to the target server
-                        sh """
-                        scp README.md ${TARGET_SERVER}:${DEPLOY_DIR}/README.md
-                        ssh ${TARGET_SERVER} <<EOF
-                        sudo chown www-data:www-data ${DEPLOY_DIR}/README.md
-                        sudo systemctl restart apache2
-                        EOF
+                        def scannerHome = tool name: 'SonarQube_Scanner'
+                        bat """
+                            ${scannerHome}\\bin\\sonar-scanner.bat \
+                            -Dsonar.projectKey=${SONAR_PROJECT_KEY} \
+                            -Dsonar.host.url=${SONAR_HOST_URL} \
+                            -Dsonar.login=${SONAR_TOKEN} \
+                            -Dsonar.sources=. \
+                            -Dsonar.exclusions=node_modules/**,dist/** \
+                            -X
                         """
                     }
                 }
