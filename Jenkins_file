@@ -16,38 +16,35 @@ pipeline {
                 git branch: 'main', url: "${GITHUB_REPO}"
             }
         }
-     stage('Install Zip') {
-    steps {
-        sh '''
-            apt-get update
-            apt-get install -y zip
-        '''
-    }
-}
-       stage('Package Application') {
+        stage('Run SonarQube Analysis') {
             steps {
-                script {
-                    // Compress the application for deployment
-                    sh '''
-                    zip -r app.zip * .[^.]* -x "*.git*"  # Exclude .git directory and files
-                    '''
+                withSonarQubeEnv('SonarQube') {
+                    script {
+                        // Using Jenkins-managed SonarScanner
+                        def scannerHome = tool name: 'SonarQube_Scanner'
+                        sh """
+                            ${scannerHome}/bin/sonar-scanner \
+                            -Dsonar.projectKey=${SONAR_PROJECT_KEY} \
+                            -Dsonar.host.url=${SONAR_HOST_URL} \
+                            -Dsonar.login=${SONAR_TOKEN} \
+                            -X
+                        """
+                    }
                 }
             }
         }
-        stage('Deploy to Target Server') {
+        stage('Deploy README.md') {
             steps {
-                sshagent(credentials: ["${SSH_CREDENTIALS_ID}"]) {
+                sshagent(credentials: ["${SSH_KEY}"]) {
                     script {
-                        // Copy the application to the target server
-                        sh '''
-                        scp app.zip ${TARGET_SERVER}:/tmp/app.zip
+                        // Copy README.md file to the target server
+                        sh """
+                        scp README.md ${TARGET_SERVER}:${DEPLOY_DIR}/README.md
                         ssh ${TARGET_SERVER} <<EOF
-                        sudo rm -rf ${DEPLOY_DIR}/*
-                        sudo unzip /tmp/app.zip -d ${DEPLOY_DIR}
-                        sudo chown -R www-data:www-data ${DEPLOY_DIR}
+                        sudo chown www-data:www-data ${DEPLOY_DIR}/README.md
                         sudo systemctl restart apache2
                         EOF
-                        '''
+                        """
                     }
                 }
             }
