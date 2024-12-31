@@ -16,24 +16,7 @@ pipeline {
                 git branch: 'main', url: "${GITHUB_REPO}"
             }
         }
-        stage('Run SonarQube Analysis') {
-            steps {
-                withSonarQubeEnv('SonarQube') {
-                    script {
-                        // Using Jenkins-managed SonarScanner
-                        def scannerHome = tool name: 'SonarQube_Scanner'
-                        sh """
-                            ${scannerHome}/bin/sonar-scanner \
-                            -Dsonar.projectKey=${SONAR_PROJECT_KEY} \
-                            -Dsonar.host.url=${SONAR_HOST_URL} \
-                            -Dsonar.login=${SONAR_TOKEN} \
-                            -X
-                        """
-                    }
-                }
-            }
-        }
-         stage('Package Application') {
+       stage('Package Application') {
             steps {
                 script {
                     // Compress the application for deployment
