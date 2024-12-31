@@ -16,6 +16,14 @@ pipeline {
                 git branch: 'main', url: "${GITHUB_REPO}"
             }
         }
+     stage('Install Zip') {
+    steps {
+        sh '''
+            apt-get update
+            apt-get install -y zip
+        '''
+    }
+}
        stage('Package Application') {
             steps {
                 script {
