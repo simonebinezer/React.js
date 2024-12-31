@@ -5,6 +5,9 @@ pipeline {
         GITHUB_REPO = 'https://github.com/simonebinezer/React.js'
         SONAR_HOST_URL = 'http://18.237.49.246:9000'
         SONAR_TOKEN = credentials('Sonar_Token') // Replace with the ID of your SonarQube token
+        TARGET_SERVER = "ec2-user@ec2-34-220-228-240.us-west-2.compute.amazonaws.com" // Replace with your target server
+        SSH_KEY = credentials('jenkins')  // Jenkins credential ID for SSH key
+        DEPLOY_DIR = "/var/www/html/myapp" // Directory where the app will be deployed
     }
 
     stages {
@@ -26,6 +29,34 @@ pipeline {
                             -Dsonar.login=${SONAR_TOKEN} \
                             -X
                         """
+                    }
+                }
+            }
+        }
+         stage('Package Application') {
+            steps {
+                script {
+                    // Compress the application for deployment
+                    sh '''
+                    zip -r app.zip * .[^.]* -x "*.git*"  # Exclude .git directory and files
+                    '''
+                }
+            }
+        }
+        stage('Deploy to Target Server') {
+            steps {
+                sshagent(credentials: ["${SSH_CREDENTIALS_ID}"]) {
+                    script {
+                        // Copy the application to the target server
+                        sh '''
+                        scp app.zip ${TARGET_SERVER}:/tmp/app.zip
+                        ssh ${TARGET_SERVER} <<EOF
+                        sudo rm -rf ${DEPLOY_DIR}/*
+                        sudo unzip /tmp/app.zip -d ${DEPLOY_DIR}
+                        sudo chown -R www-data:www-data ${DEPLOY_DIR}
+                        sudo systemctl restart apache2
+                        EOF
+                        '''
                     }
                 }
             }
