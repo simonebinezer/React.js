@@ -11,6 +11,11 @@ pipeline {
     }
 
     stages {
+ stage('Cleanup') {
+            steps {
+                cleanWs()  // Clean up the workspace
+            }
+        }
         stage('Checkout Code') {
             steps {
                 git branch: 'main', url: "${GITHUB_REPO}"
