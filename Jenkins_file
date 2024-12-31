@@ -7,7 +7,7 @@ pipeline {
         SONAR_TOKEN = credentials('Sonar_Token') // Replace with the ID of your SonarQube token
         TARGET_SERVER = "ec2-user@ec2-34-220-228-240.us-west-2.compute.amazonaws.com" // Replace with your target server
         SSH_KEY = credentials('jenkins')  // Jenkins credential ID for SSH key
-        DEPLOY_DIR = "/var/www/html/myapp" // Directory where the app will be deployed
+        DEPLOY_DIR = "/var/www/html/sample-app" // Directory where the app will be deployed
     }
 
     stages {
