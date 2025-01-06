@@ -4,7 +4,11 @@ pipeline {
         SONAR_PROJECT_KEY = 'React.js'
         GITHUB_REPO = 'https://github.com/simonebinezer/React.js'
         SONAR_HOST_URL = 'http://18.237.49.246:9000'
-        SONAR_TOKEN = credentials('Sonar_Token')
+        SONAR_TOKEN = credentials('Sonar_Token') // Replace with the ID of your SonarQube token
+        TARGET_SERVER = 'ec2-user@ec2-34-220-228-240.us-west-2.compute.amazonaws.com'
+        TARGET_PATH = '/home/ec2-user/'
+        SSH_KEY_PATH = '/var/jenkins_home/.ssh/id_rsa'
+        ZIP_FILE_NAME = 'dashboard-20250106T060445Z-001.zip'
     }
 
     stages {
@@ -31,12 +35,31 @@ pipeline {
                 }
             }
         }
-        stage('Copy File to Target') {
+        stage('Archive and Transfer Zip File') {
             steps {
-                timeout(time: 5, unit: 'MINUTES') {
-                    sh '''
-                    scp -v -i /var/jenkins_home/.ssh/id_rsa -o StrictHostKeyChecking=no README.md ec2-user@ec2-34-220-228-240.us-west-2.compute.amazonaws.com:/home/ec2-user/
-                    '''
+                script {
+                    // Archive project into a zip file
+                    echo "Archiving project into ${ZIP_FILE_NAME}"
+                    sh """
+                        zip -r ${ZIP_FILE_NAME} *
+                    """
+
+                    // Transfer the zip file to the target server
+                    echo "Transferring ${ZIP_FILE_NAME} to the target server"
+                    sh """
+                        scp -i ${SSH_KEY_PATH} -o StrictHostKeyChecking=no ${ZIP_FILE_NAME} ${TARGET_SERVER}:${TARGET_PATH}
+                    """
+                }
+            }
+        }
+        stage('Extract File on Target Server') {
+            steps {
+                script {
+                    // Extract the zip file on the target server
+                    echo "Extracting ${ZIP_FILE_NAME} on the target server"
+                    sh """
+                        ssh -i ${SSH_KEY_PATH} -o StrictHostKeyChecking=no ${TARGET_SERVER} 'unzip -o ${TARGET_PATH}/${ZIP_FILE_NAME} -d ${TARGET_PATH} && rm -f ${TARGET_PATH}/${ZIP_FILE_NAME}'
+                    """
                 }
             }
         }
