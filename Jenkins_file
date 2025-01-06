@@ -19,7 +19,7 @@ pipeline {
         }
         stage('Run SonarQube Analysis') {
             steps {
-                timeout(time: 10, unit: 'MINUTES') {
+                timeout(time: 2, unit: 'MINUTES') { // Timeout for SonarQube analysis
                     withSonarQubeEnv('SonarQube') {
                         script {
                             def scannerHome = tool name: 'SonarQube_Scanner'
@@ -37,29 +37,33 @@ pipeline {
         }
         stage('Archive and Transfer Zip File') {
             steps {
-                script {
-                    // Archive project into a zip file
-                    echo "Archiving project into ${ZIP_FILE_NAME}"
-                    sh """
-                        zip -r ${ZIP_FILE_NAME} *
-                    """
+                timeout(time: 2, unit: 'MINUTES') { // Timeout for archiving and transfer
+                    script {
+                        // Archive project into a zip file
+                        echo "Archiving project into ${ZIP_FILE_NAME}"
+                        sh """
+                            zip -r ${ZIP_FILE_NAME} *
+                        """
 
-                    // Transfer the zip file to the target server
-                    echo "Transferring ${ZIP_FILE_NAME} to the target server"
-                    sh """
-                        scp -i ${SSH_KEY_PATH} -o StrictHostKeyChecking=no ${ZIP_FILE_NAME} ${TARGET_SERVER}:${TARGET_PATH}
-                    """
+                        // Transfer the zip file to the target server
+                        echo "Transferring ${ZIP_FILE_NAME} to the target server"
+                        sh """
+                            scp -v -i ${SSH_KEY_PATH} -o StrictHostKeyChecking=no ${ZIP_FILE_NAME} ${TARGET_SERVER}:${TARGET_PATH}
+                        """
+                    }
                 }
             }
         }
         stage('Extract File on Target Server') {
             steps {
-                script {
-                    // Extract the zip file on the target server
-                    echo "Extracting ${ZIP_FILE_NAME} on the target server"
-                    sh """
-                        ssh -i ${SSH_KEY_PATH} -o StrictHostKeyChecking=no ${TARGET_SERVER} 'unzip -o ${TARGET_PATH}/${ZIP_FILE_NAME} -d ${TARGET_PATH} && rm -f ${TARGET_PATH}/${ZIP_FILE_NAME}'
-                    """
+                timeout(time: 2, unit: 'MINUTES') { // Timeout for extraction
+                    script {
+                        // Extract the zip file on the target server
+                        echo "Extracting ${ZIP_FILE_NAME} on the target server"
+                        sh """
+                            ssh -i ${SSH_KEY_PATH} -o StrictHostKeyChecking=no ${TARGET_SERVER} 'unzip -o ${TARGET_PATH}/${ZIP_FILE_NAME} -d ${TARGET_PATH} && rm -f ${TARGET_PATH}/${ZIP_FILE_NAME}'
+                        """
+                    }
                 }
             }
         }
