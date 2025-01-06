@@ -4,7 +4,7 @@ pipeline {
         SONAR_PROJECT_KEY = 'React.js'
         GITHUB_REPO = 'https://github.com/simonebinezer/React.js'
         SONAR_HOST_URL = 'http://18.237.49.246:9000'
-        SONAR_TOKEN = credentials('Sonar_Token') // Replace with the ID of your SonarQube token
+        SONAR_TOKEN = credentials('Sonar_Token')
     }
 
     stages {
@@ -15,39 +15,31 @@ pipeline {
         }
         stage('Run SonarQube Analysis') {
             steps {
-                withSonarQubeEnv('SonarQube') {
-                    script {
-                        // Using Jenkins-managed SonarScanner
-                        def scannerHome = tool name: 'SonarQube_Scanner'
-                        sh """
-                            ${scannerHome}/bin/sonar-scanner \
-                            -Dsonar.projectKey=${SONAR_PROJECT_KEY} \
-                            -Dsonar.host.url=${SONAR_HOST_URL} \
-                            -Dsonar.login=${SONAR_TOKEN} \
-                            -X
-                        """
+                timeout(time: 10, unit: 'MINUTES') {
+                    withSonarQubeEnv('SonarQube') {
+                        script {
+                            def scannerHome = tool name: 'SonarQube_Scanner'
+                            sh """
+                                ${scannerHome}/bin/sonar-scanner \
+                                -Dsonar.projectKey=${SONAR_PROJECT_KEY} \
+                                -Dsonar.host.url=${SONAR_HOST_URL} \
+                                -Dsonar.login=${SONAR_TOKEN} \
+                                -X
+                            """
+                        }
                     }
                 }
             }
         }
         stage('Copy File to Target') {
-    steps {
-        script {
-            def startTime = System.currentTimeMillis()
-            echo "Starting file transfer at: ${new Date(startTime)}"
-
-            sh '''
-            scp -i /var/jenkins_home/.ssh/id_rsa -o StrictHostKeyChecking=no README.md ec2-user@ec2-34-220-228-240.us-west-2.compute.amazonaws.com:/var/www/html/
-            '''
-
-            def endTime = System.currentTimeMillis()
-            echo "File transfer completed at: ${new Date(endTime)}"
-            echo "Total time taken: ${(endTime - startTime) / 1000} seconds"
+            steps {
+                timeout(time: 5, unit: 'MINUTES') {
+                    sh '''
+                    scp -v -i /var/jenkins_home/.ssh/id_rsa -o StrictHostKeyChecking=no README.md ec2-user@ec2-34-220-228-240.us-west-2.compute.amazonaws.com:/home/ec2-user/
+                    '''
+                }
+            }
         }
-    }
-}
-
-        
     }
     post {
         always {
