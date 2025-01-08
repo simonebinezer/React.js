@@ -8,7 +8,7 @@ pipeline {
         TARGET_SERVER = 'ec2-user@ec2-34-220-228-240.us-west-2.compute.amazonaws.com'
         TARGET_PATH = '/home/ec2-user/'
         SSH_KEY_PATH = '/var/jenkins_home/.ssh/id_rsa'
-        ZIP_FILE_NAME = 'dashboard-20250106T060445Z-001.zip'
+        ZIP_FILE_NAME = 'src'
     }
 
     stages {
@@ -19,7 +19,7 @@ pipeline {
         }
         stage('Run SonarQube Analysis') {
             steps {
-                timeout(time: 2, unit: 'MINUTES') { // Timeout for SonarQube analysis
+                timeout(time: 5, unit: 'MINUTES') { // Timeout for SonarQube analysis
                     withSonarQubeEnv('SonarQube') {
                         script {
                             def scannerHome = tool name: 'SonarQube_Scanner'
@@ -37,7 +37,7 @@ pipeline {
         }
         stage('Archive and Transfer Zip File') {
             steps {
-                timeout(time: 2, unit: 'MINUTES') { // Timeout for archiving and transfer
+                timeout(time: 5, unit: 'MINUTES') { // Timeout for archiving and transfer
                     script {
                         // Archive project into a zip file
                         echo "Archiving project into ${ZIP_FILE_NAME}"
