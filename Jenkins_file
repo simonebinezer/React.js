@@ -8,7 +8,7 @@ pipeline {
         TARGET_SERVER = 'ec2-user@ec2-34-220-228-240.us-west-2.compute.amazonaws.com'
         TARGET_PATH = '/home/ec2-user/'
         SSH_KEY_PATH = '/var/jenkins_home/.ssh/id_rsa'
-        ZIP_FILE_NAME = 'src'
+        ZIP_FILE_NAME = 'src.zip'
     }
 
     stages {
@@ -39,10 +39,10 @@ pipeline {
             steps {
                 timeout(time: 5, unit: 'MINUTES') { // Timeout for archiving and transfer
                     script {
-                        // Archive project into a zip file
-                        echo "Archiving project into ${ZIP_FILE_NAME}"
+                        // Archive only the src folder into a zip file
+                        echo "Archiving src folder into ${ZIP_FILE_NAME}"
                         sh """
-                            zip -r ${ZIP_FILE_NAME} *
+                            zip -r ${ZIP_FILE_NAME} src/
                         """
 
                         // Transfer the zip file to the target server
