@@ -19,7 +19,7 @@ pipeline {
         }
         stage('Run SonarQube Analysis') {
             steps {
-                timeout(time: 5, unit: 'MINUTES') { // Timeout for SonarQube analysis
+                timeout(time: 7, unit: 'MINUTES') { // Timeout for SonarQube analysis
                     withSonarQubeEnv('SonarQube') {
                         script {
                             def scannerHome = tool name: 'SonarQube_Scanner'
