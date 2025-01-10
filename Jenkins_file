@@ -19,7 +19,7 @@ pipeline {
         }
         stage('Run SonarQube Analysis') {
             steps {
-                timeout(time: 10, unit: 'MINUTES') { // Timeout for SonarQube analysis
+                timeout(time: 15, unit: 'MINUTES') { // Timeout for SonarQube analysis
                     withSonarQubeEnv('SonarQube') {
                         script {
                             def scannerHome = tool name: 'SonarQube_Scanner'
@@ -37,7 +37,7 @@ pipeline {
         }
         stage('Archive and Transfer Zip File') {
             steps {
-                timeout(time: 10, unit: 'MINUTES') { // Timeout for archiving and transfer
+                timeout(time: 15, unit: 'MINUTES') { // Timeout for archiving and transfer
                     script {
                         // Archive only the src folder into a zip file
                         echo "Archiving src folder into ${ZIP_FILE_NAME}"
@@ -56,7 +56,7 @@ pipeline {
         }
         stage('Extract File on Target Server') {
             steps {
-                timeout(time: 10, unit: 'MINUTES') { // Timeout for extraction
+                timeout(time: 15, unit: 'MINUTES') { // Timeout for extraction
                     script {
                         // Extract the zip file on the target server
                         echo "Extracting ${ZIP_FILE_NAME} on the target server"
