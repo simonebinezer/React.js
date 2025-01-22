@@ -14,21 +14,23 @@ pipeline {
     stages {
         stage('Checkout Code') {
             steps {
+                echo 'Checking out code from GitHub...'
                 git branch: 'main', url: "${GITHUB_REPO}"
             }
         }
+
         stage('Archive and Transfer Zip File') {
             steps {
                 timeout(time: 15, unit: 'MINUTES') { // Timeout for archiving and transfer
                     script {
                         // Archive only the src folder into a zip file
-                        echo "Archiving src folder into ${ZIP_FILE_NAME}"
+                        echo "Archiving src folder into ${ZIP_FILE_NAME}..."
                         sh """
-                            zip -r ${ZIP_FILE_NAME} app/
+                            zip -r ${ZIP_FILE_NAME} src/
                         """
 
                         // Transfer the zip file to the target server
-                        echo "Transferring ${ZIP_FILE_NAME} to the target server"
+                        echo "Transferring ${ZIP_FILE_NAME} to the target server..."
                         sh """
                             scp -v -i ${SSH_KEY_PATH} -o StrictHostKeyChecking=no ${ZIP_FILE_NAME} ${TARGET_SERVER}:${TARGET_PATH}
                         """
@@ -36,20 +38,23 @@ pipeline {
                 }
             }
         }
+
         stage('Extract File on Target Server') {
             steps {
                 timeout(time: 15, unit: 'MINUTES') { // Timeout for extraction
                     script {
                         // Extract the zip file on the target server
-                        echo "Extracting ${ZIP_FILE_NAME} on the target server"
+                        echo "Extracting ${ZIP_FILE_NAME} on the target server..."
                         sh """
-                            ssh -i ${SSH_KEY_PATH} -o StrictHostKeyChecking=no ${TARGET_SERVER} 'unzip -o ${TARGET_PATH}/${ZIP_FILE_NAME} -d ${TARGET_PATH} && rm -f ${TARGET_PATH}/${ZIP_FILE_NAME}'
+                            ssh -i ${SSH_KEY_PATH} -o StrictHostKeyChecking=no ${TARGET_SERVER} \
+                            'unzip -o ${TARGET_PATH}/${ZIP_FILE_NAME} -d ${TARGET_PATH} && rm -f ${TARGET_PATH}/${ZIP_FILE_NAME}'
                         """
                     }
                 }
             }
         }
     }
+
     post {
         always {
             echo 'Pipeline execution completed!'
