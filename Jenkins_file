@@ -22,7 +22,7 @@ pipeline {
         stage('Checkout Code') {
             steps {
                 echo 'Checking out code from GitHub...'
-                git branch: 'master', url: 'https://github.com/simonebinezer/React.js.git'
+                git branch: 'main', url: 'https://github.com/simonebinezer/React.js.git'
             }
         }
 
