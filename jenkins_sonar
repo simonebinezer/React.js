@@ -1,1 +1,40 @@
 
+
+pipeline {
+    agent any
+
+    environment {
+        SONARQUBE_SCANNER_HOME = tool(name: 'SonarQube_Scanner') // Matches the configured scanner tool in Jenkins
+        SONAR_PROJECT_KEY = 'CSAT_Code'                        // Unique identifier for the project
+        GITHUB_REPO = 'https://github.com/simonebinezer/CSAT'
+        SONAR_HOST_URL = 'http://54.189.47.219:9000'            // SonarQube server address
+    }
+
+    stages {
+        stage('Clone Repository') {
+            steps {
+                echo "Cloning the GitHub repository..."
+                git branch: 'main', url: "${GITHUB_REPO}"       // Clone the repository
+            }
+        }
+
+        stage('Build & SonarQube Analysis') {
+            steps {
+                withSonarQubeEnv('SonarQube') {                 // Matches the SonarQube instance name in Jenkins
+                    echo "Starting SonarQube analysis..."
+                    withCredentials([string(credentialsId: 'Sonar_Token', variable: 'SONAR_TOKEN')]) {
+                        sh """
+                            ${SONARQUBE_SCANNER_HOME}/bin/sonar-scanner \
+                                -Dsonar.projectKey="${SONAR_PROJECT_KEY}" \
+                                -Dsonar.projectName="CSAT_Code" \
+                                -Dsonar.projectVersion="1.0" \
+                                -Dsonar.sources=. \
+                                -Dsonar.host.url="${SONAR_HOST_URL}" \
+                                -Dsonar.login=${SONAR_TOKEN}
+                        """
+                    }
+                }
+            }
+        }
+    }
+}
