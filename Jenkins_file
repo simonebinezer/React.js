@@ -12,13 +12,6 @@ pipeline {
     }
 
     stages {
-        stage('Clear Workspace') {
-            steps {
-                echo 'Clearing workspace...'
-                deleteDir() // Deletes all files in the workspace
-            }
-        }
-
         stage('Checkout Code') {
             steps {
                 echo 'Checking out code from GitHub...'
