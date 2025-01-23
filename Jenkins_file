@@ -19,6 +19,25 @@ pipeline {
             }
         }
 
+        stage('Build & SonarQube Analysis') {
+            steps {
+                withSonarQubeEnv('SonarQube') {                 // Matches the SonarQube instance name in Jenkins
+                    echo "Starting SonarQube analysis..."
+                    withCredentials([string(credentialsId: 'Sonar_Token', variable: 'SONAR_TOKEN')]) {
+                        sh """
+                            ${SONARQUBE_SCANNER_HOME}/bin/sonar-scanner \
+                                -Dsonar.projectKey="${SONAR_PROJECT_KEY}" \
+                                -Dsonar.projectName="CSAT_Code" \
+                                -Dsonar.projectVersion="1.0" \
+                                -Dsonar.sources=. \
+                                -Dsonar.host.url="${SONAR_HOST_URL}" \
+                                -Dsonar.login=${SONAR_TOKEN}
+                        """
+                    }
+                }
+            }
+        }
+
         stage('Archive and Transfer Zip File') {
             steps {
                 timeout(time: 15, unit: 'MINUTES') { // Timeout for archiving and transfer
