@@ -5,7 +5,7 @@ pipeline {
 
     environment {
         SONARQUBE_SCANNER_HOME = tool(name: 'SonarQube_Scanner') // Matches the configured scanner tool in Jenkins
-        SONAR_PROJECT_KEY = 'CSAT_Code'                        // Unique identifier for the project
+        SONAR_PROJECT_KEY = 'App'                        // Unique identifier for the project
         GITHUB_REPO = 'https://github.com/simonebinezer/CSAT'
         SONAR_HOST_URL = 'http://54.189.47.219:9000'            // SonarQube server address
     }
@@ -26,7 +26,7 @@ pipeline {
                         sh """
                             ${SONARQUBE_SCANNER_HOME}/bin/sonar-scanner \
                                 -Dsonar.projectKey="${SONAR_PROJECT_KEY}" \
-                                -Dsonar.projectName="CSAT_Code" \
+                                -Dsonar.projectName="App" \
                                 -Dsonar.projectVersion="1.0" \
                                 -Dsonar.sources=. \
                                 -Dsonar.host.url="${SONAR_HOST_URL}" \
