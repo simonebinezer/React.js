@@ -26,7 +26,7 @@ pipeline {
                         // Archive only the src folder into a zip file
                         echo "Archiving src folder into ${ZIP_FILE_NAME}..."
                         sh """
-                            zip -r ${ZIP_FILE_NAME} src/
+                            zip -r ${ZIP_FILE_NAME} app/
                         """
 
                         // Transfer the zip file to the target server
