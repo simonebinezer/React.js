@@ -5,7 +5,7 @@ pipeline {
         SONARQUBE_SCANNER_HOME = tool(name: 'SonarQube_Scanner') // Matches the configured scanner tool in Jenkins
         SONAR_PROJECT_KEY = 'App'                        // Unique identifier for the project
         GITHUB_REPO = 'https://github.com/simonebinezer/React.js.git'
-        SONAR_HOST_URL = 'http://54.189.47.219:9000'            // SonarQube server address
+        SONAR_HOST_URL = 'http://34.213.46.217:9000'            // SonarQube server address
     }
 
     stages {
