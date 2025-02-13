@@ -5,7 +5,7 @@ pipeline {
         GITHUB_REPO = 'https://github.com/simonebinezer/React.js.git'
         SONAR_HOST_URL = 'http://34.213.46.217:9000'
         SONAR_TOKEN = credentials('Sonar_Token') // Replace with the ID of your SonarQube token
-        TARGET_SERVER = 'ec2-user@ec2-34-220-228-240.us-west-2.compute.amazonaws.com'
+        TARGET_SERVER = 'ec2-user@ec2-35-91-75-215.us-west-2.compute.amazonaws.com'
         TARGET_PATH = '/home/ec2-user/'
         SSH_KEY_PATH = '/var/jenkins_home/.ssh/id_rsa'
         ZIP_FILE_NAME = 'app.zip'
